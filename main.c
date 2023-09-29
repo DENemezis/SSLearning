@@ -17,10 +17,22 @@ void user_init(void)
 
   vdp2_scrn_back_color_set(VDP2_VRAM_ADDR(3, 0x01FFFE),
   RGB1555(1, 0, 3, 15)); 
-  vdp2_tvmd_display_set(); 
- 
-  ////pasta
+  
+  vdp1_env_t env;
+  vdp1_env_default_init(&env);
 
+  env.erase_color = RGB1555(1, 0, 3, 15);
+
+  vdp1_env_set(&env);
+
+  vdp_sync_vblank_out_set(vblank_out_handler, NULL);
+
+  vdp2_tvmd_display_set(); 
+  
+  vdp1_vram_partitions_get(&vdp1_vram_partitions);
+
+  vdp2_sync();
+  vdp2_sync_wait();
 }
 
 void init(){
@@ -29,6 +41,8 @@ void init(){
   dbgio_dev_font_load(); 
   
   vdp_sync_vblank_in_set(_vblank_in_handler, NULL); 
+
+  video_init(); 
 }
  
 void control() {
@@ -111,13 +125,14 @@ int main(void)
     dbgio_printf("Press a key to test your controller! \n\r\n\r");  // clears the screen
     control(); 
  
-    // draw(&q);
+    draw(&q);
     
     dbgio_flush(); 
-    vdp2_sync();  
+    
     vdp1_sync_render();
     vdp1_sync();
-    vdp1_sync_wait();
+    vdp2_sync();
+    vdp2_sync_wait();
   }
 
   return 0;

@@ -5,6 +5,10 @@ void video_init() {
 
     vdp2_scrn_back_color_set(VDP2_VRAM_ADDR(3, 0x01FFFE), RGB1555(1, 0, 3, 15)); 
     vdp2_tvmd_display_set(); 
+
+    cmdt_list_init(); 
+
+    vdp_sync_vblank_in_set(vblank_out_handler, NULL);
 }
 
 static void cmdt_list_init(void) {
@@ -36,7 +40,7 @@ static void vblank_out_handler(void *param) {
 
 void draw(quad* q) { 
     static const int16_vec2_t local_coord_center =
-            INT16_VEC2_INITIALIZER((SCREEN_WIDTH / 2) - SIZE - 1, (SCREEN_HEIGHT / 2) - SIZE - 1);
+            INT16_VEC2_INITIALIZER((SCREEN_WIDTH / 2) - 31, (SCREEN_HEIGHT / 2) - 31);
 
     vdp1_cmdt_t *cmdt_local_coords;
     cmdt_local_coords = &cmdt_list->cmdts[ORDER_LOCAL_COORDS_INDEX];
@@ -48,7 +52,9 @@ void draw(quad* q) {
     cmdt_polygon = &cmdt_list->cmdts[ORDER_POLYGON_INDEX];
 
     vdp1_cmdt_polyline_set(cmdt_polygon);
-    vdp1_cmdt_color_set(cmdt_polygon, q.color);
-    vdp1_cmdt_draw_mode_set(cmdt_polygon, primitive_draw_modes[q.draw_mode]);
-    vdp1_cmdt_vtx_set(cmdt_polygon, &q.points[0]);
+    vdp1_cmdt_color_set(cmdt_polygon, q->color);
+    vdp1_cmdt_draw_mode_set(cmdt_polygon, primitive_draw_modes[q->draw_mode]);
+    vdp1_cmdt_vtx_set(cmdt_polygon, &q->points[0]);
+
+    vdp1_sync_cmdt_list_put(cmdt_list, 0); 
 }
